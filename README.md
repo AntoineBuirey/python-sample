@@ -12,6 +12,8 @@ Also support referencing other keys :
 a = "hello"
 b = "${a} world"
 ```
+Will automatically reload the file if it detected that the file has changed.  
+Logged with [gamuLogger](https://github.com/T0ine34/gamuLogger)
 
 ### `cache.py`
 
