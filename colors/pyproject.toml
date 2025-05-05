@@ -1,0 +1,18 @@
+[project]
+name = "colors"
+version = "0.1.0"
+description = "A color class allowing to manipulate colors"
+authors = [
+    { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }
+]
+requires-python = ">=3.8"
+
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = [
+    "."
+]
+python_files = [
+    "tests.py"
+]

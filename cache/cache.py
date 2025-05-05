@@ -8,13 +8,13 @@ This is useful for expensive computations or I/O-bound operations that don't cha
 from datetime import datetime, timedelta
 from typing import Callable, Any, TypeVar, Dict, Tuple, FrozenSet
 
-try: # use gamuLogger if available
+try: # use gamuLogger if available # pragma: no cover
     from gamuLogger import Logger
     Logger.set_module("cache")
-    def __trace(msg: str) -> None:
+    def _trace(msg: str) -> None:
         Logger.trace(msg)
 except ImportError:
-    def __trace(_: str) -> None:
+    def _trace(_: str) -> None:
         pass
 
 T = TypeVar('T', bound=Callable[..., Any])
@@ -29,11 +29,7 @@ class Cache:
         if expire_in is not None and expire_at is not None:
             raise ValueError("Only one of expire_in or expire_at can be provided")
 
-        if expire_at is None:
-            self.expire_in = expire_in
-        elif expire_in is None:
-            self.expire_in = expire_at - datetime.now()
-
+        self.expire_in = expire_at - datetime.now() if expire_in is None else expire_in
         self.cache: Dict[
             Tuple[Tuple[Any, ...], FrozenSet[Tuple[Any, Any]]],  # Explicitly define frozenset type
             Tuple[Any, datetime]  # Result and timestamp
@@ -45,10 +41,20 @@ class Cache:
             if key in self.cache:
                 result, timestamp = self.cache[key]
                 if datetime.now() - timestamp < self.expire_in:
-                    __trace(f"Using cached result for {func.__name__} with args {args} and kwargs {kwargs}")
+                    _trace(f"Using cached result for {func.__name__} with args {args} and kwargs {kwargs}")
                     return result
-            __trace(f"Cache miss for {func.__name__} with args {args} and kwargs {kwargs}")
+            _trace(f"Cache miss for {func.__name__} with args {args} and kwargs {kwargs}")
             result = func(*args, **kwargs)
             self.cache[key] = (result, datetime.now())
             return result
+        
+        wrapper.__name__ = func.__name__
+        wrapper.__doc__ = func.__doc__
+        wrapper.__module__ = func.__module__
+        wrapper.__annotations__ = func.__annotations__
+        wrapper.__dict__.update(func.__dict__)
+        wrapper.__wrapped__ = func
+        wrapper.__defaults__ = func.__defaults__
+        wrapper.__kwdefaults__ = func.__kwdefaults__
+        wrapper.__cache = self.cache
         return wrapper

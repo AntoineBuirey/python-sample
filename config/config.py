@@ -4,20 +4,20 @@
 Configuration management module.
 """
 
-from json import load, dump
+from json import loads, dump, JSONDecodeError
 from abc import ABC, abstractmethod
 from datetime import datetime
 import re
 import os
 from typing import Any, Dict
 
-try: # use gamuLogger if available
+try: # use gamuLogger if available # pragma: no cover
     from gamuLogger import Logger
     Logger.set_module("config")
-    def __trace(msg: str) -> None:
+    def _trace(msg: str) -> None:
         Logger.trace(msg)
 except ImportError:
-    def __trace(_: str) -> None:
+    def _trace(_: str) -> None:
         pass
 
 
@@ -60,7 +60,7 @@ class BaseConfig(ABC):
         :param default: Default value if the key does not exist.
         :return: Configuration value.
         """
-        __trace(f"Getting config value for key: {key}")
+        _trace(f"Getting config value for key: {key}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -81,7 +81,7 @@ class BaseConfig(ABC):
                 config = config.replace(match.group(0), str(ref_value))
         elif not isinstance(config, (int, float, bool)):
             raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
-        __trace(f"Config value for key '{key}': {config}")
+        _trace(f"Config value for key '{key}': {config}")
         return config
 
     def set(self, key: str, value : Any) -> 'BaseConfig':
@@ -91,7 +91,7 @@ class BaseConfig(ABC):
         :param key: Configuration key.
         :param value: Configuration value.
         """
-        __trace(f"Setting config value for key: {key} to {value}")
+        _trace(f"Setting config value for key: {key} to {value}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -99,7 +99,10 @@ class BaseConfig(ABC):
             if token not in config:
                 config[token] = {}
             config = config[token]
-        config[key_tokens[-1]] = value
+        try:
+            config[key_tokens[-1]] = value
+        except TypeError:
+            raise TypeError(f"Cannot set value for key '{key}' because key is already a non-dict type.") from None
         self._save()
         return self
 
@@ -109,7 +112,7 @@ class BaseConfig(ABC):
         
         :param key: Configuration key.
         """
-        __trace(f"Removing config key: {key}")
+        _trace(f"Removing config key: {key}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -118,11 +121,14 @@ class BaseConfig(ABC):
                 config = config[token]
             else:
                 raise KeyError(f"Key '{key}' not found in configuration.")
+        if not isinstance(config, (dict, list)):
+            raise KeyError(f"Cannot remove key '{key}' because it is not a valid configuration object.")
         if key_tokens[-1] in config:
             del config[key_tokens[-1]]
         else:
             raise KeyError(f"Key '{key}' not found in configuration.")
         return self
+
 
 class JSONConfig(BaseConfig):
     """
@@ -138,13 +144,19 @@ class JSONConfig(BaseConfig):
         """
         Load configuration from a JSON file.
         """
-        __trace(f"Loading configuration from {self.file_path}")
+        _trace(f"Loading configuration from {self.file_path}")
         if not os.path.exists(self.file_path):
             self._config = {}
             self._save()
             return self
         with open(self.file_path, 'r', encoding="utf-8") as file:
-            self._config = load(file)
+            content = file.read()
+            if content.strip() == "":
+                _trace(f"Configuration file {self.file_path} is empty, creating empty config")
+                self._config = {}
+                self._save()
+                return self
+            self._config = loads(content)
         return self
 
     def _reload(self) -> 'JSONConfig':
@@ -155,20 +167,21 @@ class JSONConfig(BaseConfig):
             self._config = {}
             self._save()
             return self
-        modified_time = os.path.getmtime(self.file_path)
-        if self._last_modified is None or modified_time > self._last_modified.timestamp():
-            __trace(f"Reloading configuration from {self.file_path} due to modification time change")
+        file_modified_time = os.path.getmtime(self.file_path) #when the file was last modified
+        config_modified_time = self._last_modified.timestamp() #when the config was last modified (this object)
+        if self._last_modified is None or file_modified_time > config_modified_time:
+            _trace(f"Reloading configuration from {self.file_path} due to modification time change")
             self._load()
-            self._last_modified = datetime.fromtimestamp(modified_time)
+            self._last_modified = datetime.fromtimestamp(file_modified_time)
         else:
-            __trace(f"Configuration file {self.file_path} has not changed since last load")
+            _trace(f"Configuration file {self.file_path} has not changed since last load")
         return self
 
     def _save(self) -> 'JSONConfig':
         """
         Save configuration to a JSON file.
         """
-        __trace(f"Saving configuration to {self.file_path}")
+        _trace(f"Saving configuration to {self.file_path}")
         with open(self.file_path, 'w', encoding="utf-8") as file:
             dump(self._config, file, indent=4)
         self._last_modified = datetime.now()

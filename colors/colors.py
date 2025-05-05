@@ -24,6 +24,9 @@ class Color:
         Returns:
             Color: The Color object
         """
+        if not hexa:
+            raise ValueError("Empty hex color string")
+        
         if hexa[0] == "#":
             hexa = hexa[1:]
 
