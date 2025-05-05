@@ -12,8 +12,11 @@ Also support referencing other keys :
 a = "hello"
 b = "${a} world"
 ```
-Will automatically reload the file if it detected that the file has changed.  
-Logged with [gamuLogger](https://github.com/T0ine34/gamuLogger)
+Will automatically reload the file if it detected that the file has changed.
+
+Support logging with [gamuLogger](https://github.com/T0ine34/gamuLogger). if not installed, will print nothing.
+
+```python
 
 ### `cache.py`
 
@@ -28,6 +31,8 @@ from datetime import timedelta
 def my_function(a, b):
     return a + b
 ```
+
+Support logging with [gamuLogger](https://github.com/T0ine34/gamuLogger). if not installed, will print nothing.
 
 ### `version.py`
 

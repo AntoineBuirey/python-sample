@@ -11,9 +11,16 @@ import re
 import os
 from typing import Any, Dict
 
-from gamuLogger import Logger
+try: # use gamuLogger if available
+    from gamuLogger import Logger
+    Logger.set_module("config")
+    def __trace(msg: str) -> None:
+        Logger.trace(msg)
+except ImportError:
+    def __trace(_: str) -> None:
+        pass
 
-Logger.set_module("config")
+
 
 class BaseConfig(ABC):
     """
@@ -53,7 +60,7 @@ class BaseConfig(ABC):
         :param default: Default value if the key does not exist.
         :return: Configuration value.
         """
-        Logger.trace(f"Getting config value for key: {key}")
+        __trace(f"Getting config value for key: {key}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -74,7 +81,7 @@ class BaseConfig(ABC):
                 config = config.replace(match.group(0), str(ref_value))
         elif not isinstance(config, (int, float, bool)):
             raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
-        Logger.trace(f"Config value for key '{key}': {config}")
+        __trace(f"Config value for key '{key}': {config}")
         return config
 
     def set(self, key: str, value : Any) -> 'BaseConfig':
@@ -84,7 +91,7 @@ class BaseConfig(ABC):
         :param key: Configuration key.
         :param value: Configuration value.
         """
-        Logger.trace(f"Setting config value for key: {key} to {value}")
+        __trace(f"Setting config value for key: {key} to {value}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -102,7 +109,7 @@ class BaseConfig(ABC):
         
         :param key: Configuration key.
         """
-        Logger.trace(f"Removing config key: {key}")
+        __trace(f"Removing config key: {key}")
         self._reload()
         key_tokens = key.split('.')
         config = self._config
@@ -131,7 +138,7 @@ class JSONConfig(BaseConfig):
         """
         Load configuration from a JSON file.
         """
-        Logger.trace(f"Loading configuration from {self.file_path}")
+        __trace(f"Loading configuration from {self.file_path}")
         if not os.path.exists(self.file_path):
             self._config = {}
             self._save()
@@ -150,18 +157,18 @@ class JSONConfig(BaseConfig):
             return self
         modified_time = os.path.getmtime(self.file_path)
         if self._last_modified is None or modified_time > self._last_modified.timestamp():
-            Logger.trace(f"Reloading configuration from {self.file_path} due to modification time change")
+            __trace(f"Reloading configuration from {self.file_path} due to modification time change")
             self._load()
             self._last_modified = datetime.fromtimestamp(modified_time)
         else:
-            Logger.trace(f"Configuration file {self.file_path} has not changed since last load")
+            __trace(f"Configuration file {self.file_path} has not changed since last load")
         return self
 
     def _save(self) -> 'JSONConfig':
         """
         Save configuration to a JSON file.
         """
-        Logger.trace(f"Saving configuration to {self.file_path}")
+        __trace(f"Saving configuration to {self.file_path}")
         with open(self.file_path, 'w', encoding="utf-8") as file:
             dump(self._config, file, indent=4)
         self._last_modified = datetime.now()

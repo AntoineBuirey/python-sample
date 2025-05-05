@@ -7,9 +7,15 @@ This is useful for expensive computations or I/O-bound operations that don't cha
 
 from datetime import datetime, timedelta
 from typing import Callable, Any, TypeVar, Dict, Tuple, FrozenSet
-from gamuLogger import Logger
 
-Logger.set_module("cache")
+try: # use gamuLogger if available
+    from gamuLogger import Logger
+    Logger.set_module("cache")
+    def __trace(msg: str) -> None:
+        Logger.trace(msg)
+except ImportError:
+    def __trace(_: str) -> None:
+        pass
 
 T = TypeVar('T', bound=Callable[..., Any])
 
@@ -39,9 +45,9 @@ class Cache:
             if key in self.cache:
                 result, timestamp = self.cache[key]
                 if datetime.now() - timestamp < self.expire_in:
-                    Logger.trace(f"Using cached result for {func.__name__} with args {args} and kwargs {kwargs}")
+                    __trace(f"Using cached result for {func.__name__} with args {args} and kwargs {kwargs}")
                     return result
-            Logger.trace(f"Cache miss for {func.__name__} with args {args} and kwargs {kwargs}")
+            __trace(f"Cache miss for {func.__name__} with args {args} and kwargs {kwargs}")
             result = func(*args, **kwargs)
             self.cache[key] = (result, datetime.now())
             return result
