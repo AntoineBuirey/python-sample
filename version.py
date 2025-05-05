@@ -1,3 +1,5 @@
+#pylint: disable=line-too-long
+
 """
 Version class to represent the version of the software.
 Compliant with the Semantic Versioning 2.0.0 specification.
@@ -60,10 +62,6 @@ class Version:
             if not patch.isdigit():
                 raise ValueError(f"Invalid patch version: {patch}")
             patch = int(patch)
-        if prerelease is not None and not isinstance(prerelease, str):
-            raise ValueError(f"Invalid pre-release version: {prerelease}")
-        if metadata is not None and not isinstance(metadata, str):
-            raise ValueError(f"Invalid metadata: {metadata}")
         if prerelease and not self._RE_PRELEASE_METADATA.match(prerelease):
             raise ValueError(f"Invalid pre-release version: {prerelease}")
         if metadata and not self._RE_PRELEASE_METADATA.match(metadata):

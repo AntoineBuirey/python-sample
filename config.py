@@ -1,41 +1,51 @@
+# pylint: disable=line-too-long
+
+"""
+Configuration management module.
+"""
+
 from json import load, dump
 from abc import ABC, abstractmethod
 from datetime import datetime
 import re
 import os
+from typing import Any, Dict
 
 from gamuLogger import Logger
 
 Logger.set_module("config")
 
 class BaseConfig(ABC):
+    """
+    Base class for configuration management.
+    This class provides methods to load, save, and manage configuration settings.
+    It is designed to be subclassed for specific configuration formats (e.g., JSON, YAML).
+    """
     RE_REFERENCE = re.compile(r'^\$\{([a-zA-Z0-9_.]+)\}$')
+
     def __init__(self):
-        self._config = {}
+        self._config : Dict[str, Any] = {}
         self._load()
-        
+
     @abstractmethod
-    def _load(self):
+    def _load(self) -> 'BaseConfig':
         """
         Load configuration
         """
-        pass
-    
+
     @abstractmethod
-    def _save(self):
+    def _save(self) -> 'BaseConfig':
         """
         Save configuration
         """
-        pass
-    
+
     @abstractmethod
-    def _reload(self):
+    def _reload(self) -> 'BaseConfig':
         """
         Reload configuration
         """
-        pass
-    
-    def get(self, key: str, /, default=None, set : bool = False):
+
+    def get(self, key: str, /, default: Any = None, set_if_not_found: bool = False) -> str | int | float | bool:
         """
         Get the value of a configuration key.
         
@@ -53,7 +63,7 @@ class BaseConfig(ABC):
             else:
                 if default is None:
                     raise KeyError(f"Key '{key}' not found in configuration.")
-                if set:
+                if set_if_not_found:
                     self.set(key, default)
                 return default
         if isinstance(config, str):
@@ -62,10 +72,12 @@ class BaseConfig(ABC):
                 ref_key = match.group(1)
                 ref_value = self.get(ref_key)
                 config = config.replace(match.group(0), str(ref_value))
+        elif not isinstance(config, (int, float, bool)):
+            raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
         Logger.trace(f"Config value for key '{key}': {config}")
         return config
-    
-    def set(self, key: str, value):
+
+    def set(self, key: str, value : Any) -> 'BaseConfig':
         """
         Set the value of a configuration key.
         
@@ -83,8 +95,8 @@ class BaseConfig(ABC):
         config[key_tokens[-1]] = value
         self._save()
         return self
-    
-    def remove(self, key: str):
+
+    def remove(self, key: str) -> 'BaseConfig':
         """
         Remove a configuration key.
         
@@ -106,12 +118,16 @@ class BaseConfig(ABC):
         return self
 
 class JSONConfig(BaseConfig):
+    """
+    JSON configuration management class.
+    This class provides methods to load, save, and manage configuration settings in JSON format.
+    """
     def __init__(self, file_path: str):
         self.file_path = file_path
         self._last_modified = None
         super().__init__()
-    
-    def _load(self):
+
+    def _load(self) -> 'JSONConfig':
         """
         Load configuration from a JSON file.
         """
@@ -120,11 +136,11 @@ class JSONConfig(BaseConfig):
             self._config = {}
             self._save()
             return self
-        with open(self.file_path, 'r') as file:
+        with open(self.file_path, 'r', encoding="utf-8") as file:
             self._config = load(file)
         return self
-    
-    def _reload(self):
+
+    def _reload(self) -> 'JSONConfig':
         """
         Reload configuration from a JSON file if the modification time has changed.
         """
@@ -140,13 +156,13 @@ class JSONConfig(BaseConfig):
         else:
             Logger.trace(f"Configuration file {self.file_path} has not changed since last load")
         return self
-    
-    def _save(self):
+
+    def _save(self) -> 'JSONConfig':
         """
         Save configuration to a JSON file.
         """
         Logger.trace(f"Saving configuration to {self.file_path}")
-        with open(self.file_path, 'w') as file:
+        with open(self.file_path, 'w', encoding="utf-8") as file:
             dump(self._config, file, indent=4)
         self._last_modified = datetime.now()
         return self
