@@ -223,52 +223,55 @@ class Version:
 
         return not self == other
 
-    def major_increment(self) -> None:
+    def major_increment(self) -> "Version":
         """
         Increment the major version.\n
         Reset minor and patch versions to 0.\n
         Reset pre-release and metadata to None.
 
-        :return: None
+        :return: self
         """
         self.major += 1
         self.minor = 0
         self.patch = 0
         self.prerelease = None
         self.metadata = None
+        return self
 
-    def minor_increment(self) -> None:
+    def minor_increment(self) -> "Version":
         """
         Increment the minor version.\n
         Reset patch version to 0.\n
         Reset pre-release and metadata to None.
 
-        :return: None
+        :return: self
         """
         self.minor += 1
         self.patch = 0
         self.prerelease = None
         self.metadata = None
+        return self
 
-    def patch_increment(self) -> None:
+    def patch_increment(self) -> "Version":
         """
         Increment the patch version.\n
         Reset pre-release and metadata to None.
         
-        :return: None
+        :return: self
         """
         self.patch += 1
         self.prerelease = None
         self.metadata = None
+        return self
 
-    def prerelease_increment(self) -> None:
+    def prerelease_increment(self) -> "Version":
         """
         Increment the pre-release version.\n
         Reset metadata to None.
         
         Support only prerelease version of the form `x.y.z-alpha.1` or `x.y.z-alpha.1.2`.\n
         
-        :return: None
+        :return: self
         """
         if self.prerelease is None:
             raise ValueError("No pre-release version to increment")
@@ -276,20 +279,22 @@ class Version:
         prerelease_parts[-1] = str(int(prerelease_parts[-1]) + 1)
         self.prerelease = '.'.join(prerelease_parts)
         self.metadata = None
+        return self
 
-    def metadata_increment(self) -> None:
+    def metadata_increment(self) -> "Version":
         """
         Increment the metadata version.\n
         
         Support only metadata version of the form `x.y.z+1` or `x.y.z+1.2`.\n
         
-        :return: None
+        :return: self
         """
         if self.metadata is None:
             raise ValueError("No metadata version to increment")
         metadata_parts = self.metadata.split('.')
         metadata_parts[-1] = str(int(metadata_parts[-1]) + 1)
         self.metadata = '.'.join(metadata_parts)
+        return self
 
     def is_prerelease(self) -> bool:
         """
@@ -306,6 +311,71 @@ class Version:
         :return: True if metadata, False otherwise
         """
         return self.metadata is not None
+
+    def major_decrement(self) -> "Version":
+        """
+        Decrement the major version.\n
+        Reset minor and patch versions to 0.\n
+        Reset pre-release and metadata to None.
+
+        :return: self
+        """
+        if self.major == 0:
+            raise ValueError("Cannot decrement major version below 0")
+        self.major -= 1
+        self.minor = 0
+        self.patch = 0
+        self.prerelease = None
+        self.metadata = None
+        return self
+
+    def minor_decrement(self) -> "Version":
+        """
+        Decrement the minor version.\n
+        Reset patch version to 0.\n
+        Reset pre-release and metadata to None.
+
+        :return: self
+        """
+        if self.minor == 0:
+            raise ValueError("Cannot decrement minor version below 0")
+        self.minor -= 1
+        self.patch = 0
+        self.prerelease = None
+        self.metadata = None
+        return self
+
+    def patch_decrement(self) -> "Version":
+        """
+        Decrement the patch version.\n
+        Reset pre-release and metadata to None.
+
+        :return: self
+        """
+        if self.patch == 0:
+            raise ValueError("Cannot decrement patch version below 0")
+        self.patch -= 1
+        self.prerelease = None
+        self.metadata = None
+        return self
+
+    def prerelease_decrement(self) -> "Version":
+        """
+        Decrement the pre-release version.\n
+        Reset metadata to None.
+
+        :return: self
+        """
+        if self.prerelease is None:
+            raise ValueError("No pre-release version to decrement")
+        prerelease_parts = self.prerelease.split('.')
+        if len(prerelease_parts) == 1:
+            raise ValueError("Cannot decrement pre-release version below 0")
+        prerelease_parts[-1] = str(int(prerelease_parts[-1]) - 1)
+        self.prerelease = '.'.join(prerelease_parts)
+        self.metadata = None
+        return self
+
 
 
 if __name__ == "__main__":

@@ -32,8 +32,34 @@ def my_function(a, b):
 ### `version.py`
 
 A class to manage versions.  
-It support versions with undefined number of parts (minimum 1 part), separated by dots (e.g. `1.0`, `1.0.0`, `1.0.0.0`)
-Allow comparing versions (even with different number of parts)
+Compliant with [semver](https://semver.org/) and support comparison between versions.
+```python
+from version import Version
+v1 = Version(1,0,0)
+v2 = Version(1,0,1)
+print(v1 < v2) # True
+```
+Support incrementing and decrementing the version, as well as converting to string.
+```python
+v1.major_increment() # 2.0.0
+v1.patch_increment() # 2.0.1
+v1.minor_increment() # 2.1.0 (reset patch to 0)
+v1.major_decrement() # 1.0.0 (reset minor and patch to 0)
+```
+
+Support converting to string, and parsing from string.
+```python
+v1 = Version.from_string("1.0.0")
+print(str(v1)) # 1.0.0
+```
+
+Support pre-release and build metadata.
+```python
+v1 = Version(1,0,0,"alpha", "build.1")
+print(str(v1)) # 1.0.0-alpha+build.1
+```
+
+
 
 ### `http_code.py`
 
