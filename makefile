@@ -19,7 +19,7 @@ tests/%: % #with pytest
 	@coverage report -m
 	@coverage html -d tests_reports/$*/coverage
 
-tests: $(addprefix tests_reports/,$(addsuffix .xml,$(MODULES)))
+tests: $(addprefix tests/,$(MODULES))
 
 clean:
 	rm -rf dist
