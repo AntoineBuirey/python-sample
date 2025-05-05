@@ -16,8 +16,6 @@ Will automatically reload the file if it detected that the file has changed.
 
 Support logging with [gamuLogger](https://github.com/T0ine34/gamuLogger). if not installed, will print nothing.
 
-```python
-
 ### `cache.py`
 
 A decorator to cache the result of a function.  
