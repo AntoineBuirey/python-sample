@@ -67,7 +67,7 @@ jobs:
       if: success() || failure()
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-        filename: coverage-report/coverage-summary.xml
+        filename: coverage-report/Cobertura.xml
         fail_below_min: true
         thresholds: "90 100"
         format: markdown
