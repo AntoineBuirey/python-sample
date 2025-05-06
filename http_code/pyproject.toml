@@ -5,7 +5,7 @@ description = "A list of HTTP status codes"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 
 [tool.pytest.ini_options]
