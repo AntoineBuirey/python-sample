@@ -10,8 +10,8 @@ TARGETS += $(addprefix dist/,$(addsuffix -$(VERSION)-py3-none-any.whl,$(MODULES)
 
 all: $(TARGETS)
 
-dist/%-$(VERSION)-py3-none-any.whl: dist/%-$(VERSION).tar.gz
-	python -m pip wheel --no-deps --wheel-dir dist $<
+dist/%-$(VERSION)-py3-none-any.whl: %
+	python build_package.py --version $(VERSION) --wheel --outdir dist $<
 
 dist/%-$(VERSION).tar.gz: %
 	python build_package.py --version $(VERSION) --sdist --outdir dist $<
