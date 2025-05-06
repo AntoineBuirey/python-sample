@@ -17,10 +17,10 @@ dist/%-$(VERSION).tar.gz: %
 	python build_package.py --version $(VERSION) --sdist --outdir dist $<
 
 tests/%: % #with pytest
-	-coverage run --branch -m pytest --tb=short --disable-warnings --junitxml=tests_reports/$*/report.xml $<
-	@coverage report -m
-	@coverage html -d tests_reports/$*/coverage
-	@rm .coverage
+	-@coverage run --data-file $<.coverage --branch -m pytest --tb=short --disable-warnings --junitxml=tests_reports/$*/report.xml $<
+	@coverage html -d tests_reports/$*/coverage --data-file $<.coverage
+	@coverage report -m --data-file $<.coverage
+	@rm $<.coverage
 
 tests: $(addprefix tests/,$(MODULES))
 
