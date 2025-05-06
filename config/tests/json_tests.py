@@ -4,7 +4,7 @@ import json
 import tempfile
 import time
 from datetime import datetime, timedelta
-from config import JSONConfig
+from config.config import JSONConfig
 from time import sleep
 
 

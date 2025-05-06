@@ -1,6 +1,6 @@
 import time
 from datetime import timedelta, datetime
-from cache import Cache
+from cache.cache import Cache
 import pytest
 
 def test_cache_expire_in_caches_result():

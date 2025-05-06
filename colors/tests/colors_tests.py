@@ -1,5 +1,5 @@
 import pytest
-from colors import Color
+from colors.colors import Color
 
 @pytest.mark.parametrize(
     "hexa, expected, test_id",

@@ -67,11 +67,11 @@ class Version:
         if metadata and not self._RE_PRELEASE_METADATA.match(metadata):
             raise ValueError(f"Invalid metadata: {metadata}")
 
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-        self.prerelease = prerelease
-        self.metadata = metadata
+        self.__major = major
+        self.__minor = minor
+        self.__patch = patch
+        self.__prerelease = prerelease
+        self.__metadata = metadata
 
     @classmethod
     def from_string(cls, version_str: str):
@@ -99,11 +99,11 @@ class Version:
 
         :return: Version string
         """
-        version_str = f"{self.major}.{self.minor}.{self.patch}"
-        if self.prerelease:
-            version_str += f"-{self.prerelease}"
-        if self.metadata:
-            version_str += f"+{self.metadata}"
+        version_str = f"{self.__major}.{self.__minor}.{self.__patch}"
+        if self.__prerelease:
+            version_str += f"-{self.__prerelease}"
+        if self.__metadata:
+            version_str += f"+{self.__metadata}"
         return version_str
 
     def __repr__(self) -> str:
@@ -112,7 +112,7 @@ class Version:
 
         :return: String representation
         """
-        return f"Version(major={self.major}, minor={self.minor}, patch={self.patch}, prerelease={self.prerelease}, metadata={self.metadata})"
+        return f"Version(major={self.__major}, minor={self.__minor}, patch={self.__patch}, prerelease={self.__prerelease}, metadata={self.__metadata})"
 
     def __hash__(self):
         """
@@ -120,7 +120,7 @@ class Version:
 
         :return: Hash value
         """
-        return hash((self.major, self.minor, self.patch, self.prerelease, self.metadata))
+        return hash((self.__major, self.__minor, self.__patch, self.__prerelease, self.__metadata))
 
     def __eq__(self, other : object) -> bool:
         """
@@ -135,7 +135,7 @@ class Version:
         """
         if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
-        return ( self.major,  self.minor,  self.patch,  self.prerelease) \
+        return ( self.__major,  self.__minor,  self.__patch,  self.__prerelease) \
             == (other.major, other.minor, other.patch, other.prerelease)
 
     def __lt__(self, other : object) -> bool: #pylint: disable=too-many-return-statements
@@ -152,21 +152,21 @@ class Version:
         if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
-        if self.major != other.major: # 1.0.0 < 2.0.0
-            return self.major < other.major
-        if self.minor != other.minor: # 1.1.0 < 1.2.0
-            return self.minor < other.minor
-        if self.patch != other.patch: # 1.1.1 < 1.1.2
-            return self.patch < other.patch
+        if self.__major != other.major: # 1.0.0 < 2.0.0
+            return self.__major < other.major
+        if self.__minor != other.minor: # 1.1.0 < 1.2.0
+            return self.__minor < other.minor
+        if self.__patch != other.patch: # 1.1.1 < 1.1.2
+            return self.__patch < other.patch
 
-        if self.prerelease is None and other.prerelease is not None: # 1.0.0 < 1.0.0-alpha
+        if self.__prerelease is None and other.prerelease is not None: # 1.0.0 < 1.0.0-alpha
             return False
-        if self.prerelease is not None and other.prerelease is None: # 1.0.0-alpha < 1.0.0
+        if self.__prerelease is not None and other.prerelease is None: # 1.0.0-alpha < 1.0.0
             return True
-        if self.prerelease is None and other.prerelease is None: # 1.0.0 < 1.0.0
+        if self.__prerelease is None and other.prerelease is None: # 1.0.0 < 1.0.0
             return False
 
-        self_tokens = self.prerelease.split('.')
+        self_tokens = self.__prerelease.split('.')
         other_tokens = other.prerelease.split('.')
         for self_token, other_token in zip_longest(self_tokens, other_tokens, fillvalue=''):
             if self_token.isdigit() and other_token.isdigit():
@@ -233,11 +233,11 @@ class Version:
 
         :return: self
         """
-        self.major += 1
-        self.minor = 0
-        self.patch = 0
-        self.prerelease = None
-        self.metadata = None
+        self.__major += 1
+        self.__minor = 0
+        self.__patch = 0
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def minor_increment(self) -> "Version":
@@ -248,10 +248,10 @@ class Version:
 
         :return: self
         """
-        self.minor += 1
-        self.patch = 0
-        self.prerelease = None
-        self.metadata = None
+        self.__minor += 1
+        self.__patch = 0
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def patch_increment(self) -> "Version":
@@ -261,9 +261,9 @@ class Version:
         
         :return: self
         """
-        self.patch += 1
-        self.prerelease = None
-        self.metadata = None
+        self.__patch += 1
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def prerelease_increment(self) -> "Version":
@@ -275,12 +275,12 @@ class Version:
         
         :return: self
         """
-        if self.prerelease is None:
+        if self.__prerelease is None:
             raise ValueError("No pre-release version to increment")
-        prerelease_parts = self.prerelease.split('.')
+        prerelease_parts = self.__prerelease.split('.')
         prerelease_parts[-1] = str(int(prerelease_parts[-1]) + 1)
-        self.prerelease = '.'.join(prerelease_parts)
-        self.metadata = None
+        self.__prerelease = '.'.join(prerelease_parts)
+        self.__metadata = None
         return self
 
     def metadata_increment(self) -> "Version":
@@ -291,11 +291,11 @@ class Version:
         
         :return: self
         """
-        if self.metadata is None:
+        if self.__metadata is None:
             raise ValueError("No metadata version to increment")
-        metadata_parts = self.metadata.split('.')
+        metadata_parts = self.__metadata.split('.')
         metadata_parts[-1] = str(int(metadata_parts[-1]) + 1)
-        self.metadata = '.'.join(metadata_parts)
+        self.__metadata = '.'.join(metadata_parts)
         return self
 
     def is_prerelease(self) -> bool:
@@ -304,7 +304,7 @@ class Version:
 
         :return: True if pre-release, False otherwise
         """
-        return self.prerelease is not None
+        return self.__prerelease is not None
 
     def has_metadata(self) -> bool:
         """
@@ -312,7 +312,7 @@ class Version:
 
         :return: True if metadata, False otherwise
         """
-        return self.metadata is not None
+        return self.__metadata is not None
 
     def major_decrement(self) -> "Version":
         """
@@ -322,13 +322,13 @@ class Version:
 
         :return: self
         """
-        if self.major == 0:
+        if self.__major == 0:
             raise ValueError("Cannot decrement major version below 0")
-        self.major -= 1
-        self.minor = 0
-        self.patch = 0
-        self.prerelease = None
-        self.metadata = None
+        self.__major -= 1
+        self.__minor = 0
+        self.__patch = 0
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def minor_decrement(self) -> "Version":
@@ -339,12 +339,12 @@ class Version:
 
         :return: self
         """
-        if self.minor == 0:
+        if self.__minor == 0:
             raise ValueError("Cannot decrement minor version below 0")
-        self.minor -= 1
-        self.patch = 0
-        self.prerelease = None
-        self.metadata = None
+        self.__minor -= 1
+        self.__patch = 0
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def patch_decrement(self) -> "Version":
@@ -354,11 +354,11 @@ class Version:
 
         :return: self
         """
-        if self.patch == 0:
+        if self.__patch == 0:
             raise ValueError("Cannot decrement patch version below 0")
-        self.patch -= 1
-        self.prerelease = None
-        self.metadata = None
+        self.__patch -= 1
+        self.__prerelease = None
+        self.__metadata = None
         return self
 
     def prerelease_decrement(self) -> "Version":
@@ -368,12 +368,112 @@ class Version:
 
         :return: self
         """
-        if self.prerelease is None:
+        if self.__prerelease is None:
             raise ValueError("No pre-release version to decrement")
-        prerelease_parts = self.prerelease.split('.')
+        prerelease_parts = self.__prerelease.split('.')
         if len(prerelease_parts) == 1:
             raise ValueError("Cannot decrement pre-release version below 0")
         prerelease_parts[-1] = str(int(prerelease_parts[-1]) - 1)
-        self.prerelease = '.'.join(prerelease_parts)
-        self.metadata = None
+        self.__prerelease = '.'.join(prerelease_parts)
+        self.__metadata = None
         return self
+
+    @property
+    def major(self) -> int:
+        """
+        Get the major version number.
+
+        :return: Major version number
+        """
+        return self.__major
+    
+    @major.setter
+    def major(self, value: int) -> None:
+        """
+        Set the major version number.
+
+        :param value: Major version number
+        """
+        if not isinstance(value, int):
+            raise ValueError(f"Invalid major version: {value}")
+        self.__major = value
+
+    @property
+    def minor(self) -> int:
+        """
+        Get the minor version number.
+
+        :return: Minor version number
+        """
+        return self.__minor
+
+    @minor.setter
+    def minor(self, value: int) -> None:
+        """
+        Set the minor version number.
+
+        :param value: Minor version number
+        """
+        if not isinstance(value, int):
+            raise ValueError(f"Invalid minor version: {value}")
+        self.__minor = value
+
+    @property
+    def patch(self) -> int:
+        """
+        Get the patch version number.
+
+        :return: Patch version number
+        """
+        return self.__patch
+
+    @patch.setter
+    def patch(self, value: int) -> None:
+        """
+        Set the patch version number.
+
+        :param value: Patch version number
+        """
+        if not isinstance(value, int):
+            raise ValueError(f"Invalid patch version: {value}")
+        self.__patch = value
+
+    @property
+    def prerelease(self) -> str|None:
+        """
+        Get the pre-release version.
+
+        :return: Pre-release version
+        """
+        return self.__prerelease
+
+    @prerelease.setter
+    def prerelease(self, value: str|None) -> None:
+        """
+        Set the pre-release version.
+
+        :param value: Pre-release version
+        """
+        if value and not self._RE_PRELEASE_METADATA.match(value):
+            raise ValueError(f"Invalid pre-release version: {value}")
+        self.__prerelease = value
+
+    @property
+    def metadata(self) -> str|None:
+        """
+        Get the metadata version.
+
+        :return: Metadata version
+        """
+        return self.__metadata
+
+    @metadata.setter
+    def metadata(self, value: str|None) -> None:
+        """
+        Set the metadata version.
+
+        :param value: Metadata version
+        """
+        if value and not self._RE_PRELEASE_METADATA.match(value):
+            raise ValueError(f"Invalid metadata version: {value}")
+        self.__metadata = value

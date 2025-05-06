@@ -1,4 +1,4 @@
-from http_code import HttpCode
+from http_code.http_code.http_code import HttpCode
 import pytest
 
 

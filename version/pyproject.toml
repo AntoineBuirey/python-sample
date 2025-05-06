@@ -7,6 +7,10 @@ authors = [
 ]
 requires-python = ">=3.10"
 
+[tool.setuptools.packages.find]
+include = [
+    "version"
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -14,5 +18,5 @@ testpaths = [
     "."
 ]
 python_files = [
-    "tests.py"
+    "*tests.py"
 ]

@@ -7,12 +7,16 @@ authors = [
 ]
 requires-python = ">=3.10"
 
+[tool.setuptools.packages.find]
+include = [
+    "colors"
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = [
-    "."
+    "tests"
 ]
 python_files = [
-    "tests.py"
+    "*tests.py"
 ]

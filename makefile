@@ -1,5 +1,5 @@
 
-VERSION = 0.1.0
+VERSION = $(shell python get_version.py)
 
 MODULES = cache colors config http_code version
 
@@ -10,11 +10,13 @@ TARGETS += $(addprefix dist/,$(addsuffix -$(VERSION)-py3-none-any.whl,$(MODULES)
 
 all: $(TARGETS)
 
-dist/%-$(VERSION)-py3-none-any.whl: %
+dist/%-$(VERSION)-py3-none-any.whl: % %/pyproject.toml
 	python build_package.py --version $(VERSION) --wheel --outdir dist $<
+	@rm -rf $</$<.egg-info $</build
 
-dist/%-$(VERSION).tar.gz: %
+dist/%-$(VERSION).tar.gz: % %/pyproject.toml
 	python build_package.py --version $(VERSION) --sdist --outdir dist $<
+	@rm -rf $</$<.egg-info $</build
 
 tests/%: % #with pytest
 	-@coverage run --data-file $<.coverage --branch -m pytest --tb=short --disable-warnings --junitxml=tests_reports/$*/report.xml $<
@@ -27,3 +29,4 @@ tests: $(addprefix tests/,$(MODULES))
 
 clean:
 	rm -rf dist
+	rm -rf **/*.egg-info **/build

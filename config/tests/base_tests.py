@@ -1,6 +1,6 @@
 import pytest
 from typing import Any
-from config import BaseConfig
+from config.config import BaseConfig
 
 
 # Minimal concrete subclass for testing

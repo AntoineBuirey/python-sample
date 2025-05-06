@@ -1,4 +1,4 @@
-from version import Version
+from version.version import Version
 import pytest
 
 def test_version_initialization():
@@ -376,3 +376,29 @@ def test_version_prerelease_decrement_no_prerelease():
 )
 def test_version_semver_example(version1, version2):
     assert version1 < version2
+
+def test_getters_and_setters():
+    v = Version(1, 2, 3)
+    v.major = 5
+    v.minor = 6
+    v.patch = 7
+    v.prerelease = "rc.1"
+    v.metadata = "build.2"
+    assert v.major == 5
+    assert v.minor == 6
+    assert v.patch == 7
+    assert v.prerelease == "rc.1"
+    assert v.metadata == "build.2"
+
+def test_setters_invalid_values():
+    v = Version(1, 2, 3)
+    with pytest.raises(ValueError):
+        v.major = "a"
+    with pytest.raises(ValueError):
+        v.minor = "b"
+    with pytest.raises(ValueError):
+        v.patch = "c"
+    with pytest.raises(ValueError):
+        v.prerelease = "invalid@prerelease"
+    with pytest.raises(ValueError):
+        v.metadata = "invalid@meta"
