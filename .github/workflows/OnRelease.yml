@@ -67,12 +67,12 @@ jobs:
       if: success() || failure()
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-      filename: coverage-report/Cobertura.xml
-      fail_below_min: true
-      thresholds: "90 100"
-      format: markdown
-      output: both
-      hide_complexity: true
+        filename: coverage-report/Cobertura.xml
+        fail_below_min: true
+        thresholds: "90 100"
+        format: markdown
+        output: both
+        hide_complexity: true
 
     - name: Rename coverage report
       if: success() || failure()
