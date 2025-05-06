@@ -47,14 +47,46 @@ jobs:
         include_passed: true
         check_name: Pytest Test Report (${{ matrix.python-version }})
 
-    - name: cobertura-report
+    - name: Setup .NET Core # Required to execute ReportGenerator
       if: success() || failure()
-      uses: 5monkeys/cobertura-action@v14
+      uses: actions/setup-dotnet@v4
       with:
-        path: tests_reports/**/coverage.xml
-        minimum_coverage: 90
-        fail_below_threshold: true
-        report_name: Coverage Report (${{ matrix.python-version }})
+        dotnet-version: 8.x
+        dotnet-quality: 'ga'
+
+    - name: Merge coverage reports
+      if: success() || failure()
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5
+      with:
+        reports: tests_reports/**/coverage.xml
+        targetdir: coverage-report
+        reporttypes: "cobertura"
+
+
+    - name: coverage report
+      if: success() || failure()
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: coverage-report/coverage-summary.xml
+        fail_below_min: true
+        thresholds: "90 100"
+        format: markdown
+        output: both
+    
+    - name: add coverage to release description
+      if: success() || failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const coverage = fs.readFileSync('code-coverage-results.md', 'utf8');
+          const releaseBody = `Python ${{ matrix.python-version }}\n${coverage}\n\n${context.payload.release.body}`;
+          github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: context.payload.release.id,
+            body: releaseBody
+          });
 
   build:
     runs-on: ubuntu-latest
@@ -66,7 +98,7 @@ jobs:
     - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
-        python-version: 3.10
+        python-version: "3.10"
 
     - name: Install dependencies
       run: |
