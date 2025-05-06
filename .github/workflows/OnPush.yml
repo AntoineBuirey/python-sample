@@ -37,7 +37,7 @@ jobs:
       if: success() || failure()
       uses: actions/upload-artifact@v4
       with:
-        name: test-reports
+        name: test-reports-${{ matrix.python-version }}
         path: tests_reports/
 
     - name: publish test report
