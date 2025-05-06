@@ -19,6 +19,7 @@ dist/%-$(VERSION).tar.gz: %
 tests/%: % #with pytest
 	-@coverage run --data-file $<.coverage --branch -m pytest --tb=short --disable-warnings --junitxml=tests_reports/$*/report.xml $<
 	@coverage html -d tests_reports/$*/coverage --data-file $<.coverage
+	@coverage xml -o tests_reports/$*/coverage.xml --data-file $<.coverage
 	@coverage report -m --data-file $<.coverage
 	@rm $<.coverage
 

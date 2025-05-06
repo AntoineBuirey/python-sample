@@ -47,6 +47,15 @@ jobs:
         include_passed: true
         check_name: Pytest Test Report (${{ matrix.python-version }})
 
+    - name: cobertura-report
+      if: success() || failure()
+      uses: 5monkeys/cobertura-action@v14
+      with:
+        path: tests_reports/**/coverage.xml
+        minimum_coverage: 90
+        fail_below_threshold: true
+        report_name: Coverage Report (${{ matrix.python-version }})
+
   build:
     runs-on: ubuntu-latest
     needs: test
