@@ -13,7 +13,7 @@ try: # use gamuLogger if available # pragma: no cover
     Logger.set_module("cache")
     def _trace(msg: str) -> None:
         Logger.trace(msg)
-except ImportError:
+except ImportError: # pragma: no cover
     def _trace(_: str) -> None:
         pass
 
