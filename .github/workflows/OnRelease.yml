@@ -1,0 +1,82 @@
+name: On Release Workflow
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest coverage
+
+    - name: Install make
+      run: sudo apt-get install make
+
+    - name: Run tests
+      run: make tests -k
+
+    - name: Upload test reports
+      if: success() || failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-${{ matrix.python-version }}
+        path: tests_reports/
+
+    - name: publish test report
+      if: success() || failure()
+      uses: mikepenz/action-junit-report@v5
+      with:
+        report_paths: tests_reports/**/report.xml
+        include_passed: true
+        check_name: Pytest Test Report (${{ matrix.python-version }})
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.10
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+
+    - name: Build package
+      run: make VERSION=${{ github.event.release.tag_name }}
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-artifacts-${{ github.event.release.tag_name }}
+        path: |
+          dist/*.tar.gz
+          dist/*.whl
+
+    - name: Publish release assets
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: "dist/*"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

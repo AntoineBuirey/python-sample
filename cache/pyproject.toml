@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "cache"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A simple cache manager"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }

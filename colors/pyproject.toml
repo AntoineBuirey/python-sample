@@ -1,6 +1,6 @@
 [project]
 name = "colors"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A color class allowing to manipulate colors"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }

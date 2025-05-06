@@ -1,6 +1,6 @@
 [project]
 name = "config"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A library to manage configuration files"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }

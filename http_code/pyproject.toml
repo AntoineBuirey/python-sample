@@ -1,6 +1,6 @@
 [project]
 name = "http_code"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A list of HTTP status codes"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }

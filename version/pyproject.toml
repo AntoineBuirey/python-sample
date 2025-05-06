@@ -1,6 +1,6 @@
 [project]
 name = "version"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A library to manage version numbers"
 authors = [
     { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }
