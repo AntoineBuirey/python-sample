@@ -95,6 +95,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: code-coverage-report-3.10
+        path: coverage-reports
 
 
     - name: add coverage to release description
@@ -102,7 +103,7 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          const coverage = fs.readFileSync('code-coverage-report-3.10/coverage.3.10.md', 'utf8');
+          const coverage = fs.readFileSync('coverage-reports/coverage.3.10.md', 'utf8');
           const releaseBody = `${coverage}\n\n${context.payload.release.body}`;
           github.rest.repos.updateRelease({
             owner: context.repo.owner,
