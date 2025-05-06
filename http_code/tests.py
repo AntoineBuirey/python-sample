@@ -1,4 +1,3 @@
-
 from http_code import HttpCode
 import pytest
 

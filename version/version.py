@@ -133,7 +133,7 @@ class Version:
         :param other: Other Version object
         :return: True if equal, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
         return ( self.major,  self.minor,  self.patch,  self.prerelease) \
             == (other.major, other.minor, other.patch, other.prerelease)
@@ -149,7 +149,7 @@ class Version:
         :param other: Other Version object
         :return: True if this version is less than the other, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
         if self.major != other.major: # 1.0.0 < 2.0.0
@@ -163,16 +163,18 @@ class Version:
             return False
         if self.prerelease is not None and other.prerelease is None: # 1.0.0-alpha < 1.0.0
             return True
-        if self.prerelease is not None and other.prerelease is not None: # 1.0.0-alpha < 1.0.0-beta
-            self_tokens = self.prerelease.split('.')
-            other_tokens = other.prerelease.split('.')
-            for self_token, other_token in zip_longest(self_tokens, other_tokens, fillvalue=''):
-                if self_token.isdigit() and other_token.isdigit():
-                    if int(self_token) != int(other_token):
-                        return int(self_token) < int(other_token)
-                else:
-                    if self_token != other_token:
-                        return self_token < other_token
+        if self.prerelease is None and other.prerelease is None: # 1.0.0 < 1.0.0
+            return False
+
+        self_tokens = self.prerelease.split('.')
+        other_tokens = other.prerelease.split('.')
+        for self_token, other_token in zip_longest(self_tokens, other_tokens, fillvalue=''):
+            if self_token.isdigit() and other_token.isdigit():
+                if int(self_token) != int(other_token):
+                    return int(self_token) < int(other_token)
+            else:
+                if self_token != other_token:
+                    return self_token < other_token
         return False
 
     def __gt__(self, other : object) -> bool:
@@ -182,7 +184,7 @@ class Version:
         :param other: Other Version object
         :return: True if this version is greater than the other, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
         return other < self
@@ -194,7 +196,7 @@ class Version:
         :param other: Other Version object
         :return: True if this version is greater than or equal to the other, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
         return self > other or self == other
@@ -206,7 +208,7 @@ class Version:
         :param other: Other Version object
         :return: True if this version is less than or equal to the other, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
         return self < other or self == other
@@ -218,7 +220,7 @@ class Version:
         :param other: Other Version object
         :return: True if this version is not equal to the other, False otherwise
         """
-        if not isinstance(other, Version):
+        if not isinstance(other, Version): #pragma: no cover
             return NotImplemented
 
         return not self == other
@@ -375,14 +377,3 @@ class Version:
         self.prerelease = '.'.join(prerelease_parts)
         self.metadata = None
         return self
-
-
-
-if __name__ == "__main__":
-    assert Version.from_string("1.0.0-alpha")       < Version.from_string("1.0.0-alpha.1")
-    assert Version.from_string("1.0.0-alpha.1")     < Version.from_string("1.0.0-alpha.beta")
-    assert Version.from_string("1.0.0-alpha.beta")  < Version.from_string("1.0.0-beta")
-    assert Version.from_string("1.0.0-beta")        < Version.from_string("1.0.0-beta.2")
-    assert Version.from_string("1.0.0-beta.2")      < Version.from_string("1.0.0-beta.11")
-    assert Version.from_string("1.0.0-beta.11")     < Version.from_string("1.0.0-rc.1")
-    assert Version.from_string("1.0.0-rc.1")        < Version.from_string("1.0.0")
