@@ -174,3 +174,26 @@ def test_remove_errors(initial, key, test_id):
 
     with pytest.raises(KeyError):
         config.remove(key)
+
+
+def test_set_reference():
+    # Arrange
+
+    config = DummyConfig({
+        "foo": "${bar}",
+        "bar": 42,
+        "baz" : {
+            "qux": "${foo}",
+            "value": 69
+        },
+        "test": "${baz.value}",
+        "complex": "${baz.value}.01"
+    })
+
+    # Assert
+
+    assert config.get("foo") == "42"
+    assert config.get("bar") == 42
+    assert config.get("baz.qux") == "42"
+    assert config.get("test") == "69"
+    assert config.get("complex") == "69.01"

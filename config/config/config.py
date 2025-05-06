@@ -28,7 +28,7 @@ class BaseConfig(ABC):
     This class provides methods to load, save, and manage configuration settings.
     It is designed to be subclassed for specific configuration formats (e.g., JSON, YAML).
     """
-    RE_REFERENCE = re.compile(r'^\$\{([a-zA-Z0-9_.]+)\}$')
+    RE_REFERENCE = re.compile(r'\$\{([a-zA-Z0-9_.]+)\}')
 
     def __init__(self):
         self._config : Dict[str, Any] = {}
