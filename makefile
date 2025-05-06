@@ -18,6 +18,7 @@ tests/%: % #with pytest
 	-coverage run -m --branch pytest --tb=short --disable-warnings --junitxml=tests_reports/$*/report.xml $<
 	@coverage report -m
 	@coverage html -d tests_reports/$*/coverage
+	@rm .coverage
 
 tests: $(addprefix tests/,$(MODULES))
 
