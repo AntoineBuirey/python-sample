@@ -31,15 +31,17 @@ jobs:
       run: sudo apt-get install make
 
     - name: Run tests
-      run: make tests
+      run: make tests -k
 
     - name: Upload test reports
+      if: success() || failure()
       uses: actions/upload-artifact@v4
       with:
         name: test-reports
         path: tests_reports/
 
     - name: publish test report
+      if: success() || failure()
       uses: mikepenz/action-junit-report@v5
       with:
         report_paths: tests_reports/**/report.xml
