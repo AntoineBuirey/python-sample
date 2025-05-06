@@ -55,7 +55,7 @@ jobs:
         dotnet-quality: 'ga'
 
     - name: Merge coverage reports
-      if: success() || failure()
+      if: success() || failure() && ${{ matrix.python-version }} == '3.10'
       uses: danielpalme/ReportGenerator-GitHub-Action@v5
       with:
         reports: tests_reports/**/coverage.xml
@@ -64,7 +64,7 @@ jobs:
 
 
     - name: coverage report
-      if: success() || failure()
+      if: success() || failure() && ${{ matrix.python-version }} == '3.10'
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
         filename: coverage-report/Cobertura.xml
@@ -75,11 +75,11 @@ jobs:
         hide_complexity: true
 
     - name: Rename coverage report
-      if: success() || failure()
+      if: success() || failure() && ${{ matrix.python-version }} == '3.10'
       run: mv code-coverage-results.md coverage-report/coverage.${{ matrix.python-version }}.md
 
     - name: upload code coverage report
-      if: success() || failure()
+      if: success() || failure() && ${{ matrix.python-version }} == '3.10'
       uses: actions/upload-artifact@v4
       with:
         name: code-coverage-report-${{ matrix.python-version }}
@@ -102,7 +102,7 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          const coverage = fs.readFileSync('coverage-report/coverage.3.10.md', 'utf8');
+          const coverage = fs.readFileSync('code-coverage-report-3.10/coverage.3.10.md', 'utf8');
           const releaseBody = `${coverage}\n\n${context.payload.release.body}`;
           github.rest.repos.updateRelease({
             owner: context.repo.owner,
@@ -110,6 +110,11 @@ jobs:
             release_id: context.payload.release.id,
             body: releaseBody
           });
+
+    - name: delete artifact
+      uses: actions/delete-artifact@v5
+      with:
+        name: code-coverage-report-3.10
 
   build:
     runs-on: ubuntu-latest
