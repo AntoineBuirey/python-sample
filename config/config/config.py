@@ -137,7 +137,7 @@ class JSONConfig(BaseConfig):
     """
     def __init__(self, file_path: str):
         self.file_path = file_path
-        self._last_modified = None
+        self._last_modified = datetime.now()
         super().__init__()
 
     def _load(self) -> 'JSONConfig':
