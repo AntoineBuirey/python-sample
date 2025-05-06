@@ -67,20 +67,43 @@ jobs:
       if: success() || failure()
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-        filename: coverage-report/Cobertura.xml
-        fail_below_min: true
-        thresholds: "90 100"
-        format: markdown
-        output: both
-    
-    - name: add coverage to release description
+      filename: coverage-report/Cobertura.xml
+      fail_below_min: true
+      thresholds: "90 100"
+      format: markdown
+      output: both
+      hide_complexity: true
+
+    - name: Rename coverage report
       if: success() || failure()
+      run: mv code-coverage-results.md coverage-report/coverage.${{ matrix.python-version }}.md
+
+    - name: upload code coverage report
+      if: success() || failure()
+      uses: actions/upload-artifact@v4
+      with:
+      name: code-coverage-report-${{ matrix.python-version }}
+      path: coverage-report/coverage.${{ matrix.python-version }}.md
+    
+
+  update_release:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: download code coverage reports
+      uses: actions/download-artifact@v3
+      with:
+        name: code-coverage-report-3.10
+
+
+    - name: add coverage to release description
       uses: actions/github-script@v6
       with:
         script: |
           const fs = require('fs');
-          const coverage = fs.readFileSync('code-coverage-results.md', 'utf8');
-          const releaseBody = `Python ${{ matrix.python-version }}\n${coverage}\n\n${context.payload.release.body}`;
+          const coverage = fs.readFileSync('coverage-report/coverage.3.10.md', 'utf8');
+          const releaseBody = `${coverage}\n\n${context.payload.release.body}`;
           github.rest.repos.updateRelease({
             owner: context.repo.owner,
             repo: context.repo.repo,
