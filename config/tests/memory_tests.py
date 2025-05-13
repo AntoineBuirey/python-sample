@@ -1,45 +1,35 @@
 import pytest
 from typing import Any
-from config.config import BaseConfig
+from config.config import MemoryConfig
 
-
-# Minimal concrete subclass for testing
-class DummyConfig(BaseConfig):
-    def __init__(self, initial=None):
-        self._initial = initial or {}
-        super().__init__()
-
-    def _load(self):
-        self._config = self._initial.copy()
-        return self
-
-    def _save(self):
-        self._initial = self._config.copy()
-        return self
-
-    def _reload(self):
-        # Simulate reload by reloading from _initial
-        self._config = self._initial.copy()
-        return self
 
 @pytest.mark.parametrize(
-    "initial, key, expected, test_id",
+    "initial, key, expected",
     [
-        ({"foo": 123}, "foo", 123, "get_simple_int"),
-        ({"foo": "bar"}, "foo", "bar", "get_simple_str"),
-        ({"foo": True}, "foo", True, "get_simple_bool"),
-        ({"foo": 1.5}, "foo", 1.5, "get_simple_float"),
-        ({"foo": {"bar": 42}}, "foo.bar", 42, "get_nested"),
-        ({"foo": {"bar": {"baz": "qux"}}}, "foo.bar.baz", "qux", "get_deep_nested"),
-        ({"foo": "${bar}", "bar": 99}, "foo", "99", "get_reference"),
-        ({"foo": "${bar}", "bar": "${baz}", "baz": 7}, "foo", "7", "get_nested_reference"),
+        ({"foo": 123}, "foo", 123),
+        ({"foo": "bar"}, "foo", "bar"),
+        ({"foo": True}, "foo", True),
+        ({"foo": 1.5}, "foo", 1.5),
+        ({"foo": {"bar": 42}}, "foo.bar", 42),
+        ({"foo": {"bar": {"baz": "qux"}}}, "foo.bar.baz", "qux"),
+        ({"foo": "${bar}", "bar": 99}, "foo", "99"),
+        ({"foo": "${bar}", "bar": "${baz}", "baz": 7}, "foo", "7"),
     ],
-    ids=lambda p: p if isinstance(p, str) else None
+    ids=[
+        "get_simple_int",
+        "get_simple_str",
+        "get_simple_bool",
+        "get_simple_float",
+        "get_nested",
+        "get_deep_nested",
+        "get_reference",
+        "get_nested_reference",
+    ]
 )
-def test_get_happy(initial, key, expected, test_id):
+def test_get_happy(initial, key, expected):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act
 
@@ -50,17 +40,19 @@ def test_get_happy(initial, key, expected, test_id):
     assert result == expected
 
 @pytest.mark.parametrize(
-    "initial, key, default, set_if_not_found, expected, test_id",
+    "initial, key, default, set_if_not_found, expected",
     [
-        ({}, "foo", 42, False, 42, "get_default_no_set"),
-        ({}, "foo", 42, True, 42, "get_default_and_set"),
+        ({}, "foo", 42, False, 42),
+        ({}, "foo", 42, True, 42),
+        (None, "foo", 42, False, 42),
+        (None, "foo", 42, True, 42),
     ],
-    ids=["get_default_no_set", "get_default_and_set"]
+    ids=["get_default_no_set", "get_default_and_set", "get_default_no_set_none", "get_default_and_set_none"]
 )
-def test_get_edge_cases(initial, key, default, set_if_not_found, expected, test_id):
+def test_get_edge_cases(initial, key, default, set_if_not_found, expected):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act & Assert
 
@@ -85,7 +77,7 @@ def test_get_edge_cases(initial, key, default, set_if_not_found, expected, test_
 def test_get_errors(initial, key, test_id):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act & Assert
 
@@ -105,7 +97,7 @@ def test_get_errors(initial, key, test_id):
 def test_set_happy(initial, key, value, expected, test_id):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act
 
@@ -125,7 +117,7 @@ def test_set_happy(initial, key, value, expected, test_id):
 def test_set_edge_cases(initial, key, value, test_id):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act
 
@@ -145,7 +137,7 @@ def test_set_edge_cases(initial, key, value, test_id):
 def test_remove_happy(initial, key, test_id):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act
 
@@ -168,7 +160,7 @@ def test_remove_happy(initial, key, test_id):
 def test_remove_errors(initial, key, test_id):
     # Arrange
 
-    config = DummyConfig(initial)
+    config = MemoryConfig(initial)
 
     # Act & Assert
 
@@ -179,7 +171,7 @@ def test_remove_errors(initial, key, test_id):
 def test_set_reference():
     # Arrange
 
-    config = DummyConfig({
+    config = MemoryConfig({
         "foo": "${bar}",
         "bar": 42,
         "baz" : {

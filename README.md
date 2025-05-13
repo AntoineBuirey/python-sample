@@ -5,10 +5,11 @@ a collection of python classes and functions that I use in my projects
 
 ### `config.py`
 
-A class to read and write configuration files, currently only in json format.  
+A class to read and write configuration files, in json or toml format.  
+Also support memory-only configuration (do not persist to file).  
 Support nested dictionaries and lists, as well as combined keys (e.g. `a.b.c`).  
 Also support referencing other keys :
-```properties
+```python
 a = "hello"
 b = "${a} world"
 ```

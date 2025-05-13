@@ -13,20 +13,20 @@ def temp_json_file():
     # Arrange
     with tempfile.NamedTemporaryFile("w+", delete=False, suffix=".json") as f:
         print("{}", file=f)
-        yield f.name
+    yield f.name
     os.remove(f.name)
 
 
 @pytest.mark.parametrize(
-    "initial_data, test_id",
+    "initial_data",
     [
-        ({"foo": "bar"}, "load_existing_file"),
-        ({}, "load_empty_file"),
-        ({"num": 123, "lst": [1, 2, 3]}, "load_complex_file"),
+        {"foo": "bar"},
+        {},
+        {"num": 123, "lst": [1, 2, 3]},
     ],
-    ids=lambda p: p if isinstance(p, str) else None
+    ids=["load_existing_file", "load_empty_file", "load_complex_file"]
 )
-def test_load_existing_file(temp_json_file, initial_data, test_id):
+def test_load_existing_file(temp_json_file, initial_data):
     # Arrange
 
     with open(temp_json_file, "w", encoding="utf-8") as f:
@@ -168,4 +168,14 @@ def test_load_invalid_json(temp_json_file):
     # Act & Assert
 
     with pytest.raises(json.JSONDecodeError):
+        JSONConfig(temp_json_file)
+
+def test_load_json_list(temp_json_file):
+    # Arrange
+
+    with open(temp_json_file, "w", encoding="utf-8") as f:
+        json.dump([1, 2, 3], f)
+
+    # Act
+    with pytest.raises(ValueError):
         JSONConfig(temp_json_file)
