@@ -32,6 +32,16 @@ class Version:
                      + r'(?:\+' + __VERSION_METADATA + r')?'
                      + '$')
     _RE_VERSION = re.compile(__VERSION)
+    _4_DIGITS_VERSION = ( '^' + __VERSION_MAJOR
+                     + r'\.'
+                     + __VERSION_MINOR
+                     + r'\.'
+                     + __VERSION_PATCH
+                     + r'\.'
+                     + __VERSION_PRERELEASE
+                    + r'(?:\+' + __VERSION_METADATA + r')?'
+                    + '$')
+    _RE_4_DIGITS_VERSION = re.compile(_4_DIGITS_VERSION)
 
 
     def __init__(self,
@@ -74,6 +84,44 @@ class Version:
         self.__metadata = metadata
 
     @classmethod
+    def from_4_digits(cls, version_str: str):
+        """
+        Create a Version object from a 4 digits version string.
+
+        :param version: 4 digits version string, separated by dots (e.g. "12.3.456.7")
+        :return: Version object
+        """
+        # if not isinstance(version, str):
+        #     raise ValueError(f"Invalid version string: {version}")
+        # parts = version.split('.')
+        # if len(parts) != 4:
+        #     raise ValueError(f"Invalid version string: {version}")
+        # major = int(parts[0] or 0)
+        # minor = int(parts[1] or 0)
+        # patch = int(parts[2] or 0)
+        
+        # if "+" in parts[3]:
+        #     prerelease, metadata = parts[3].split("+", 1)
+        # else:
+        #     metadata = None
+        #     prerelease = parts[3]
+        
+        # prerelease = prerelease or None
+        # metadata = metadata or None
+        # return Version(major, minor, patch, prerelease, metadata)
+        match = cls._RE_4_DIGITS_VERSION.match(version_str)
+        if not match:
+            raise ValueError(f"Invalid version string: {version_str}")
+
+        major = int(match.group('major') or 0)
+        minor = int(match.group('minor') or 0)
+        patch = int(match.group('patch') or 0)
+        prerelease = match.group('prerelease') or None
+        metadata = match.group('metadata') or None
+
+        return cls(major, minor, patch, prerelease, metadata)
+
+    @classmethod
     def from_string(cls, version_str: str):
         """
         Create a Version object from a version string.
@@ -81,6 +129,9 @@ class Version:
         :param version_str: Version string
         :return: Version object
         """
+        if cls._RE_4_DIGITS_VERSION.match(version_str):
+            return cls.from_4_digits(version_str)
+
         match = cls._RE_VERSION.match(version_str)
         if not match:
             raise ValueError(f"Invalid version string: {version_str}")

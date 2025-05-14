@@ -402,3 +402,90 @@ def test_setters_invalid_values():
         v.prerelease = "invalid@prerelease"
     with pytest.raises(ValueError):
         v.metadata = "invalid@meta"
+
+
+@pytest.mark.parametrize(
+    "input_str,expected_major,expected_minor,expected_patch,expected_prerelease, expected_metadata",
+    [
+        # Happy path
+        ("1.2.3.4", 1, 2, 3, "4", None),
+        ("12.0.456.7", 12, 0, 456, "7", None),
+        ("0.0.0.0", 0, 0, 0, "0", None),
+        ("999.888.777.666", 999, 888, 777, "666", None),
+        ("10.20.30.alpha", 10, 20, 30, "alpha", None),
+        ("1.2.3.4+patch", 1, 2, 3, "4", "patch"),
+
+        ("1.2.3.4.5", 1, 2, 3, "4.5", None),
+        ("1.2.3.4.5.6", 1, 2, 3, "4.5.6", None),
+    ],
+    ids=[
+        "simple-numeric",
+        "zero-minor",
+        "all-zeros",
+        "large-numbers",
+        "prerelease-string",
+        "simple-numeric-metadata",
+
+        "too-many-parts",
+        "way-too-many-parts",
+    ]
+)
+def test_from_4_digits_happy_path(input_str, expected_major, expected_minor, expected_patch, expected_prerelease, expected_metadata):
+
+    # Act
+    result = Version.from_4_digits(input_str)
+
+    # Assert
+    assert isinstance(result, Version)
+    assert result.major == expected_major
+    assert result.minor == expected_minor
+    assert result.patch == expected_patch
+    assert result.prerelease == expected_prerelease
+    assert result.metadata == expected_metadata
+
+
+@pytest.mark.parametrize(
+    "input_str",
+    [
+        "1.2.3",            # Too few parts
+        "1.2",              # Way too few
+        "",                 # Empty string
+        "1.2.3.",
+        ".2.3.4",
+        "1..3.4",
+        "1.2..4",
+    ],
+    ids=[
+        "too-few-parts",
+        "way-too-few",
+        "empty-string",
+        "trailing-dot-empty-prerelease",
+        "leading-dot-empty-major",
+        "empty-minor",
+        "empty-patch",
+    ]
+)
+def test_from_4_digits_invalid_parts_count(input_str):
+
+    # Act & Assert
+    with pytest.raises(ValueError) as excinfo:
+        print(Version.from_4_digits(input_str))
+    assert f"Invalid version string: {input_str}" in str(excinfo.value)
+
+
+# test Version.from_string with 4 digits
+def test_from_string_4_digits():
+    version = Version.from_string("1.2.3.4")
+    assert version.major == 1
+    assert version.minor == 2
+    assert version.patch == 3
+    assert version.prerelease == "4"
+    assert version.metadata is None
+
+def test_from_string_4_digits_with_metadata():
+    version = Version.from_string("1.2.3.4+build.1")
+    assert version.major == 1
+    assert version.minor == 2
+    assert version.patch == 3
+    assert version.prerelease == "4"
+    assert version.metadata == "build.1"
