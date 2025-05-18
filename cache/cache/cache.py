@@ -7,6 +7,7 @@ This is useful for expensive computations or I/O-bound operations that don't cha
 
 from datetime import datetime, timedelta
 from typing import Callable, Any, TypeVar, Dict, Tuple, FrozenSet
+from functools import wraps
 
 try: # use gamuLogger if available # pragma: no cover
     from gamuLogger import Logger
@@ -36,6 +37,7 @@ class Cache:
         ] = {}
 
     def __call__(self, func : Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
         def wrapper(*args : Any, **kwargs : Any) -> T:
             key = (args, frozenset(kwargs.items()))
             if key in self.cache:
@@ -48,10 +50,6 @@ class Cache:
             self.cache[key] = (result, datetime.now())
             return result
         
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
-        wrapper.__module__ = func.__module__
-        wrapper.__annotations__ = func.__annotations__
         wrapper.__dict__.update(func.__dict__)
         wrapper.__wrapped__ = func
         wrapper.__defaults__ = func.__defaults__
