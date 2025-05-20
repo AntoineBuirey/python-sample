@@ -144,6 +144,16 @@ class Version:
 
         return cls(major, minor, patch, prerelease, metadata)
 
+    @classmethod
+    def is_valid_string(cls, version_str: str) -> bool:
+        """
+        Check if a version string is valid.
+
+        :param version_str: Version string
+        :return: True if valid, False otherwise
+        """
+        return bool(cls._RE_VERSION.match(version_str)) or bool(cls._RE_4_DIGITS_VERSION.match(version_str))
+
     def __str__(self) -> str:
         """
         Return the version as a string.

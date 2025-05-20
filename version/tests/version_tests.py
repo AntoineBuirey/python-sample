@@ -489,3 +489,68 @@ def test_from_string_4_digits_with_metadata():
     assert version.patch == 3
     assert version.prerelease == "4"
     assert version.metadata == "build.1"
+
+@pytest.mark.parametrize(
+    "version_str,expected",
+    [
+        # Happy path: 3-digit version
+        ("1.2.3", True),
+        # Happy path: 4-digit version
+        ("1.2.3.4", True),
+        # Happy path: large numbers
+        ("123.456.789", True),
+        ("123.456.789.0", True),
+        # Edge: single digit
+        ("0.0.0", True),
+        ("0.0.0.0", True),
+        # Edge: leading zeros
+        ("01.02.03", True),
+        ("01.02.03.04", True),
+        # Error: too few digits
+        ("1.2", False),
+        ("1", False),
+        # Happy path: 5-digit version with the last 2 parts as prerelease (4.5)
+        ("1.2.3.4.5", True),
+        # Error: non-numeric
+        ("a.b.c", False),
+        ("1.2.x", False),
+        # Error: empty string
+        ("", False),
+        # Error: whitespace only
+        ("   ", False),
+        # Error: whitespace around valid version
+        (" 1.2.3 ", False),
+        # Happy path: prerelease
+        ("1.2.3-beta", True),
+        ("v1.2.3", False)
+    ],
+    ids=[
+        "valid_3_digit",
+        "valid_4_digit",
+        "valid_large_3_digit",
+        "valid_large_4_digit",
+        "valid_zero_3_digit",
+        "valid_zero_4_digit",
+        "valid_leading_zero_3_digit",
+        "valid_leading_zero_4_digit",
+        "too_few_digits_2",
+        "too_few_digits_1",
+        "too_many_parts",
+        "non_numeric",
+        "non_numeric_last",
+        "empty_string",
+        "whitespace_only",
+        "whitespace_around_valid",
+        "valid_prerelease",
+        "special_characters_v"
+    ]
+)
+def test_is_valid_string(version_str, expected):
+    # Arrange
+    # (No arrange needed if all inputs are parameters, except for None case)
+    print(f"Testing version string: {version_str} : expected: {expected}")
+    result = Version.is_valid_string(version_str)
+    if result:
+        print(repr(Version.from_string(version_str)))
+    # Assert
+    assert result == expected
