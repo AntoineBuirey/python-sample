@@ -1,0 +1,22 @@
+[project]
+name = "singleton"
+dynamic = ["version"]
+description = "Singleton pattern implementation in Python"
+authors = [
+    { name = "Antoine BUIREY", email = "antoine.buirey@gmail.com" }
+]
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = [
+    "singleton"
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = [
+    "tests"
+]
+python_files = [
+    "*tests.py"
+]

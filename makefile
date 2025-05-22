@@ -1,7 +1,7 @@
 
 VERSION = $(shell python get_version.py)
 
-MODULES = cache colors config http_code version
+MODULES = cache colors config http_code version singleton
 
 TARGETS = $(addprefix dist/,$(addsuffix -$(VERSION).tar.gz,$(MODULES)))
 TARGETS += $(addprefix dist/,$(addsuffix -$(VERSION)-py3-none-any.whl,$(MODULES)))
