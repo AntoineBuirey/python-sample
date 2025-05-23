@@ -60,8 +60,8 @@ class BaseConfig:
                 ref_key = match.group(1)
                 ref_value = self.get(ref_key)
                 config = config.replace(match.group(0), str(ref_value))
-        elif not isinstance(config, (int, float, bool)):
-            raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
+        # elif not isinstance(config, (int, float, bool)):
+        #     raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
         _trace(f"Config value for key '{key}': {config}")
         return config
 

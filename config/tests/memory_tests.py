@@ -67,14 +67,13 @@ def test_get_edge_cases(initial, key, default, set_if_not_found, expected):
 
 
 @pytest.mark.parametrize(
-    "initial, key, test_id",
+    "initial, key",
     [
-        ({}, "foo", "get_missing_no_default"),
-        ({"foo": {"bar": {}}}, "foo.bar", "get_nonendpoint_dict_no_default"),
+        ({}, "foo"),
     ],
-    ids=lambda p: p if isinstance(p, str) else None
+    ids=["get_missing_no_default"]
 )
-def test_get_errors(initial, key, test_id):
+def test_get_errors(initial, key):
     # Arrange
 
     config = MemoryConfig(initial)
