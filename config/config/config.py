@@ -119,6 +119,69 @@ class BaseConfig:
         """
         return f"{self.__class__.__name__}({self._config})"
 
+    def __items__(self):
+        """
+        Iterate over the configuration items.
+
+        :return: Iterator over configuration items.
+        """
+        return self._config.items()
+
+    def __iter__(self):
+        """
+        Iterate over the configuration keys.
+
+        :return: Iterator over configuration keys.
+        """
+        return iter(self._config)
+
+    def __len__(self) -> int:
+        """
+        Get the number of configuration items.
+
+        :return: Number of configuration items.
+        """
+        return len(self._config)
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Get the value of a configuration key.
+
+        :param key: Configuration key.
+        :return: Configuration value.
+        """
+        return self.get(key)
+
+    def __setitem__(self, key: str, value: Any) -> 'BaseConfig':
+        """
+        Set the value of a configuration key.
+
+        :param key: Configuration key.
+        :param value: Configuration value.
+        """
+        return self.set(key, value)
+
+    def __delitem__(self, key: str) -> 'BaseConfig':
+        """
+        Remove a configuration key.
+
+        :param key: Configuration key.
+        """
+        return self.remove(key)
+
+    def __contains__(self, key: str) -> bool:
+        """
+        Check if a key exists in the configuration.
+
+        :param key: Configuration key.
+        :return: True if the key exists, False otherwise.
+        """
+        try:
+            self.get(key)
+            return True
+        except KeyError:
+            return False
+
 class FileConfig(BaseConfig, ABC):
     """
     File configuration management class.
