@@ -135,6 +135,30 @@ class BaseConfig:
         """
         return iter(self._config)
 
+    def keys(self):
+        """
+        Get the configuration keys.
+
+        :return: Configuration keys.
+        """
+        return self._config.keys()
+
+    def values(self):
+        """
+        Get the configuration values.
+
+        :return: Configuration values.
+        """
+        return self._config.values()
+
+    def items(self):
+        """
+        Get the configuration items.
+
+        :return: Configuration items.
+        """
+        return self._config.items()
+
     def __len__(self) -> int:
         """
         Get the number of configuration items.
