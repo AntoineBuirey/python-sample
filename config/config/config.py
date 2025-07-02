@@ -48,6 +48,8 @@ class BaseConfig:
         for token in key_tokens:
             if token in config:
                 config = config[token]
+            elif token.isdigit() and 0 <= int(token) < len(config):
+                config = config[int(token)]
             else:
                 if default is None:
                     raise KeyError(f"Key '{key}' not found in configuration.")
