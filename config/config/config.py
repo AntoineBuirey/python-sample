@@ -325,10 +325,10 @@ class JSONConfig(FileConfig):
     JSON configuration management class.
     This class provides methods to load, save, and manage configuration settings in JSON format.
     """
-    
-    def __init__(self, file_path: str):
+
+    def __init__(self, file_path: str, require_validation: bool = False):
         super().__init__(file_path)
-        self.__validate()
+        self.__validate(require_validation)
 
     def _to_string(self) -> str:
         """
@@ -347,7 +347,7 @@ class JSONConfig(FileConfig):
         if not isinstance(self._config, dict):
             raise ValueError("Invalid JSON format: expected a dictionary.")
 
-    def __validate(self):
+    def __validate(self, required: bool):
         """
         Validate the configuration against a JSON schema if provided in the config.
         The url to the schema must be provided in the "$schema" key of the config (https://json-schema.org/)
@@ -368,6 +368,8 @@ class JSONConfig(FileConfig):
             _trace("Configuration validated successfully against schema.")
         else:
             _trace("No JSON schema provided for validation.")
+            if required:
+                raise ValueError("JSON schema validation is required but no '$schema' key found in configuration.")
 
 class TOMLConfig(FileConfig):
     """
