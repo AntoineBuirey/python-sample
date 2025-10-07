@@ -5,8 +5,10 @@ Configuration management module.
 """
 
 from json import loads, dumps
+from jsonschema import validate, ValidationError
 from abc import ABC, abstractmethod
 from datetime import datetime
+import requests
 import re
 import os
 import tomlkit
@@ -323,6 +325,10 @@ class JSONConfig(FileConfig):
     JSON configuration management class.
     This class provides methods to load, save, and manage configuration settings in JSON format.
     """
+    
+    def __init__(self, file_path: str):
+        super().__init__(file_path)
+        self.__validate()
 
     def _to_string(self) -> str:
         """
@@ -340,6 +346,28 @@ class JSONConfig(FileConfig):
         self._config = loads(config_string)
         if not isinstance(self._config, dict):
             raise ValueError("Invalid JSON format: expected a dictionary.")
+
+    def __validate(self):
+        """
+        Validate the configuration against a JSON schema if provided in the config.
+        The url to the schema must be provided in the "$schema" key of the config (https://json-schema.org/)
+        """
+        if "$schema" in self._config:
+            schema_url = self._config["$schema"]
+            try:
+                response = requests.get(schema_url)
+                response.raise_for_status()
+                schema = response.json()
+                validate(instance=self._config, schema=schema)
+            except requests.RequestException as e:
+                raise ValueError(f"Failed to fetch JSON schema from {schema_url}: {e}") from None
+            except ValidationError as e:
+                raise ValueError(f"Configuration validation against schema failed: {e.message}") from None
+            except Exception as e:
+                raise ValueError(f"An error occurred during schema validation: {e}") from None
+            _trace("Configuration validated successfully against schema.")
+        else:
+            _trace("No JSON schema provided for validation.")
 
 class TOMLConfig(FileConfig):
     """
