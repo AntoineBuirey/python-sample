@@ -1,1 +1,1 @@
-from .config import MemoryConfig, JSONConfig, TOMLConfig
+from .config import MemoryConfig, JSONConfig, TOMLConfig, INIConfig, EnvConfig, YAMLConfig

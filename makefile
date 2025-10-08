@@ -1,7 +1,7 @@
 
 VERSION = $(shell python get_version.py)
 
-DEPENDENCIES_NAMES = jsonschema requests tomlkit coverage pytest
+DEPENDENCIES_NAMES = jsonschema requests tomlkit coverage pytest PyYAML
 
 MODULES = cache colors config http_code version singleton
 

@@ -13,6 +13,10 @@ import re
 import os
 import tomlkit
 from typing import Any, Dict
+import configparser
+from io import StringIO
+import shlex
+import yaml
 
 try: # use gamuLogger if available # pragma: no cover
     from gamuLogger import Logger
@@ -395,6 +399,98 @@ class TOMLConfig(FileConfig):
         """
         self._config = tomlkit.loads(config_string)
 
+
+class YAMLConfig(FileConfig):
+    """
+    YAML configuration management class.
+    """
+    def _to_string(self) -> str:
+        """
+        String representation of the configuration in YAML format.
+        """
+        return yaml.safe_dump(self._config, sort_keys=False)
+
+    def _from_string(self, config_string: str) -> None:
+        """
+        Create a configuration object from a YAML string.
+        """
+        loaded = yaml.safe_load(config_string)
+        # YAML can produce None for empty documents
+        self._config = loaded if isinstance(loaded, dict) and loaded is not None else ({} if loaded is None else loaded)
+
+
+class INIConfig(FileConfig):
+    """
+    INI configuration management class using configparser.
+    Sections become nested dictionaries.
+    """
+    def _to_string(self) -> str:
+        parser = configparser.RawConfigParser()
+        # If there are top-level keys (not nested under a section), put them in DEFAULT
+        defaults = {}
+        for k, v in list(self._config.items()):
+            if isinstance(v, dict):
+                parser[k] = {str(kk): str(vv) for kk, vv in v.items()}
+            else:
+                defaults[k] = str(v)
+        if defaults:
+            parser.defaults().update({str(k): str(v) for k, v in defaults.items()})
+        sio = StringIO()
+        parser.write(sio)
+        return sio.getvalue()
+
+    def _from_string(self, config_string: str) -> None:
+        parser = configparser.RawConfigParser()
+        try:
+            parser.read_string(config_string)
+        except configparser.MissingSectionHeaderError:
+            # Treat top-level key=value pairs by prepending a DEFAULT section
+            parser.read_string("[DEFAULT]\n" + config_string)
+        data: Dict[str, Any] = {}
+        # defaults (top-level keys)
+        defaults = dict(parser.defaults())
+        for k, v in defaults.items():
+            data[k] = v
+        for section in parser.sections():
+            items = dict(parser.items(section))
+            data[section] = items
+        self._config = data
+
+
+class EnvConfig(FileConfig):
+    """
+    .env-style configuration (KEY=VALUE per line).
+    """
+    def _to_string(self) -> str:
+        lines = []
+        for k, v in self._config.items():
+            lines.append(f"{k}={v}")
+        return "\n".join(lines) + ("\n" if lines else "")
+
+    def _from_string(self, config_string: str) -> None:
+        data: Dict[str, Any] = {}
+        for raw_line in config_string.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith('#') or line.startswith(';'):
+                continue
+            # support export VAR=VAL
+            if line.startswith('export '):
+                line = line[len('export '):]
+            if '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip()
+            # remove surrounding quotes if present
+            if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                try:
+                    # preserve escaped sequences by using shlex
+                    value = shlex.split(value)[0]
+                except Exception:
+                    value = value[1:-1]
+            data[key] = value
+        self._config = data
+
 class MemoryConfig(BaseConfig):
     """
     In-memory configuration management class.
@@ -418,4 +514,10 @@ def get_config(file_path: str) -> FileConfig:
         return JSONConfig(file_path)
     if file_path.lower().endswith('.toml'):
         return TOMLConfig(file_path)
+    if file_path.lower().endswith(('.yaml', '.yml')):
+        return YAMLConfig(file_path)
+    if file_path.lower().endswith(('.ini', '.cfg')):
+        return INIConfig(file_path)
+    if file_path.lower().endswith('.env'):
+        return EnvConfig(file_path)
     raise ValueError(f"Unsupported configuration file format: {file_path}")
