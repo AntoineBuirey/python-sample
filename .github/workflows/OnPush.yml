@@ -49,11 +49,19 @@ jobs:
         include_passed: true
         check_name: Pytest Test Report (${{ matrix.python-version }})
 
+    - name: Merge coverage reports
+      if: success() || failure()
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5
+      with:
+        reports: tests_reports/**/coverage.xml
+        targetdir: coverage-report
+        reporttypes: "cobertura"
+
     - name: cobertura-report
       if: success() || failure()
       uses: 5monkeys/cobertura-action@v14
       with:
-        path: tests_reports/**/coverage.xml
+        path: coverage-report/Cobertura.xml
         minimum_coverage: 90
         fail_below_threshold: true
         report_name: Coverage Report (${{ matrix.python-version }})
