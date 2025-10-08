@@ -179,3 +179,90 @@ def test_load_json_list(temp_json_file):
     # Act
     with pytest.raises(ValueError):
         JSONConfig(temp_json_file)
+
+
+def test_json_schema_validation_success(temp_json_file, monkeypatch):
+    # Arrange
+    schema = {
+        "type": "object",
+        "properties": {
+            "foo": {"type": "string"}
+        },
+        "required": ["foo"]
+    }
+
+    content = {"$schema": "http://example.com/schema", "foo": "bar"}
+    with open(temp_json_file, "w", encoding="utf-8") as f:
+        json.dump(content, f)
+
+    class DummyResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return schema
+
+    monkeypatch.setattr("requests.get", lambda url: DummyResponse())
+
+    # Act / Assert - should not raise
+    JSONConfig(temp_json_file)
+
+
+def test_json_schema_fetch_failure(temp_json_file, monkeypatch):
+    # Arrange
+    content = {"$schema": "http://example.com/schema", "foo": "bar"}
+    with open(temp_json_file, "w", encoding="utf-8") as f:
+        json.dump(content, f)
+
+    def raise_exc(url):
+        raise Exception("network error")
+
+    monkeypatch.setattr("requests.get", raise_exc)
+
+    # Act / Assert
+    with pytest.raises(ValueError) as exc:
+        JSONConfig(temp_json_file)
+    assert "An error occurred during schema validation" in str(exc.value)
+
+
+def test_json_schema_validation_failure(temp_json_file, monkeypatch):
+    # Arrange: schema requires foo to be integer but file has string
+    schema = {
+        "type": "object",
+        "properties": {
+            "foo": {"type": "integer"}
+        },
+        "required": ["foo"]
+    }
+
+    content = {"$schema": "http://example.com/schema", "foo": "not-an-int"}
+    with open(temp_json_file, "w", encoding="utf-8") as f:
+        json.dump(content, f)
+
+    class DummyResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return schema
+
+    monkeypatch.setattr("requests.get", lambda url: DummyResponse())
+
+    # Act / Assert - validation should fail and raise ValueError
+    with pytest.raises(ValueError) as exc:
+        JSONConfig(temp_json_file)
+    assert "Configuration validation against schema failed" in str(exc.value)
+
+
+def test_require_validation_without_schema(tmp_path):
+    # Arrange
+    file_path = tmp_path / "no_schema.json"
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump({"foo": "bar"}, f)
+
+    # Act / Assert
+    with pytest.raises(ValueError) as exc:
+        JSONConfig(str(file_path), True)
+    assert "JSON schema validation is required but no '$schema' key found in configuration" in str(exc.value)
+
+

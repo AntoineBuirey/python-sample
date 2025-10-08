@@ -67,6 +67,9 @@ class BaseConfig:
         # elif not isinstance(config, (int, float, bool)):
         #     raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
         _trace(f"Config value for key '{key}': {config}")
+        
+        if not isinstance(config, (str, int, float, bool)):
+            raise KeyError(f"The provided key '{key}' is not a valid endpoint for a configuration value.")
         return config
 
     def set(self, key: str, value : Any) -> 'BaseConfig':
@@ -398,7 +401,7 @@ class MemoryConfig(BaseConfig):
     This class provides methods to load, save, and manage configuration settings in memory.
     Does not persist to a file.
     """
-    def __init__(self, initial: Dict[str, Any] = None):
+    def __init__(self, initial: Dict[str, Any]|None = None):
         super().__init__()
         if initial is not None:
             self._config = initial
