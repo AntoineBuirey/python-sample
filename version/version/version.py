@@ -166,6 +166,21 @@ class Version:
         if self.__metadata:
             version_str += f"+{self.__metadata}"
         return version_str
+    
+    def to_python_version(self) -> str:
+        """
+        Return the version as a Python compatible version string.
+
+        :return: Python compatible version string
+        """
+        version_str = f"{self.__major}.{self.__minor}.{self.__patch}"
+        if self.__prerelease:
+            prerelease = self.__prerelease.replace('.', '_').replace('-', '_')
+            version_str += f".{prerelease}"
+        if self.__metadata:
+            metadata = self.__metadata.replace('.', '_').replace('-', '_')
+            version_str += f".post{metadata}"
+        return version_str
 
     def __repr__(self) -> str:
         """
@@ -220,12 +235,18 @@ class Version:
         if self.__patch != other.patch: # 1.1.1 < 1.1.2
             return self.__patch < other.patch
 
-        if self.__prerelease is None and other.prerelease is not None: # 1.0.0 < 1.0.0-alpha
-            return False
-        if self.__prerelease is not None and other.prerelease is None: # 1.0.0-alpha < 1.0.0
-            return True
-        if self.__prerelease is None and other.prerelease is None: # 1.0.0 < 1.0.0
-            return False
+        # if self.__prerelease is None and other.prerelease is not None: # 1.0.0 < 1.0.0-alpha
+        #     return False
+        # if self.__prerelease is not None and other.prerelease is None: # 1.0.0-alpha < 1.0.0
+        #     return True
+        # if self.__prerelease is None and other.prerelease is None: # 1.0.0 < 1.0.0
+        #     return False
+        if self.__prerelease is None:
+            return False # 1.0.0 > 1.0.0-alpha or 1.0.0 < 1.0.0
+        if other.prerelease is None:
+            return True # 1.0.0-alpha < 1.0.0
+        
+        # case like 1.0.0-alpha < 1.0.0-beta
 
         self_tokens = self.__prerelease.split('.')
         other_tokens = other.prerelease.split('.')

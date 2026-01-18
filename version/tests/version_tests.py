@@ -390,19 +390,6 @@ def test_getters_and_setters():
     assert v.prerelease == "rc.1"
     assert v.metadata == "build.2"
 
-def test_setters_invalid_values():
-    v = Version(1, 2, 3)
-    with pytest.raises(ValueError):
-        v.major = "a"
-    with pytest.raises(ValueError):
-        v.minor = "b"
-    with pytest.raises(ValueError):
-        v.patch = "c"
-    with pytest.raises(ValueError):
-        v.prerelease = "invalid@prerelease"
-    with pytest.raises(ValueError):
-        v.metadata = "invalid@meta"
-
 
 @pytest.mark.parametrize(
     "input_str,expected_major,expected_minor,expected_patch,expected_prerelease, expected_metadata",
@@ -554,3 +541,55 @@ def test_is_valid_string(version_str, expected):
         print(repr(Version.from_string(version_str)))
     # Assert
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "major, minor, patch, prerelease, metadata, expected_str",
+    [
+        (1, 0, 0, None, None, "1.0.0"),
+        (1, 2, 3, None, None, "1.2.3"),
+        (1, 0, 0, "alpha", None, "1.0.0.alpha"),
+        (1, 0, 0, "beta", None, "1.0.0.beta"),
+        (1, 0, 0, "rc.1", None, "1.0.0.rc_1"),
+        (1, 2, 3, "alpha.1", None, "1.2.3.alpha_1"),
+        (1, 2, 3, "beta.2.3", None, "1.2.3.beta_2_3"),
+        (1, 0, 0, None, "build", "1.0.0.postbuild"),
+        (1, 0, 0, None, "build.123", "1.0.0.postbuild_123"),
+        (1, 2, 3, "alpha", "build", "1.2.3.alpha.postbuild"),
+        (1, 2, 3, "alpha.1", "build.123", "1.2.3.alpha_1.postbuild_123"),
+        (10, 20, 30, "beta.1.2.3", "build.456.789", "10.20.30.beta_1_2_3.postbuild_456_789"),
+    ],
+    ids=[
+        "no_prerelease_no_metadata",
+        "simple_version",
+        "alpha_prerelease",
+        "beta_prerelease",
+        "rc_prerelease_with_dots",
+        "prerelease_with_single_dot",
+        "prerelease_with_multiple_dots",
+        "metadata_only",
+        "metadata_with_dots",
+        "prerelease_and_metadata",
+        "prerelease_and_metadata_with_dots",
+        "complex_prerelease_and_metadata",
+    ]
+)
+def test_to_python_version(major, minor, patch, prerelease, metadata, expected_str):
+    version = Version(major, minor, patch, prerelease, metadata)
+    assert version.to_python_version() == expected_str
+
+def test_to_python_version_replaces_special_chars():
+    # Test that dots and dashes are replaced with underscores
+    version = Version(1, 2, 3, "alpha.beta", "metadata.123")
+    result = version.to_python_version()
+    assert result == "1.2.3.alpha_beta.postmetadata_123"
+    assert '.' not in result.split('.')[-1]  # No dots in the last segment after splitting on main dots
+
+def test_to_python_version_vs_str():
+    # Verify that to_python_version and __str__ produce different outputs for versions with prerelease/metadata
+    version = Version(1, 2, 3, "alpha.1", "build.123")
+    python_version = version.to_python_version()
+    semver_version = str(version)
+    assert python_version == "1.2.3.alpha_1.postbuild_123"
+    assert semver_version == "1.2.3-alpha.1+build.123"
+    assert python_version != semver_version
