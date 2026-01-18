@@ -553,11 +553,11 @@ def test_is_valid_string(version_str, expected):
         (1, 0, 0, "rc.1", None, "1.0.0.rc_1"),
         (1, 2, 3, "alpha.1", None, "1.2.3.alpha_1"),
         (1, 2, 3, "beta.2.3", None, "1.2.3.beta_2_3"),
-        (1, 0, 0, None, "build", "1.0.0.postbuild"),
-        (1, 0, 0, None, "build.123", "1.0.0.postbuild_123"),
-        (1, 2, 3, "alpha", "build", "1.2.3.alpha.postbuild"),
-        (1, 2, 3, "alpha.1", "build.123", "1.2.3.alpha_1.postbuild_123"),
-        (10, 20, 30, "beta.1.2.3", "build.456.789", "10.20.30.beta_1_2_3.postbuild_456_789"),
+        (1, 0, 0, None, "build", "1.0.0.build"),
+        (1, 0, 0, None, "build.123", "1.0.0.build_123"),
+        (1, 2, 3, "alpha", "build", "1.2.3.alpha.build"),
+        (1, 2, 3, "alpha.1", "build.123", "1.2.3.alpha_1.build_123"),
+        (10, 20, 30, "beta.1.2.3", "build.456.789", "10.20.30.beta_1_2_3.build_456_789"),
     ],
     ids=[
         "no_prerelease_no_metadata",
@@ -582,7 +582,7 @@ def test_to_python_version_replaces_special_chars():
     # Test that dots and dashes are replaced with underscores
     version = Version(1, 2, 3, "alpha.beta", "metadata.123")
     result = version.to_python_version()
-    assert result == "1.2.3.alpha_beta.postmetadata_123"
+    assert result == "1.2.3.alpha_beta.metadata_123"
     assert '.' not in result.split('.')[-1]  # No dots in the last segment after splitting on main dots
 
 def test_to_python_version_vs_str():
@@ -590,6 +590,6 @@ def test_to_python_version_vs_str():
     version = Version(1, 2, 3, "alpha.1", "build.123")
     python_version = version.to_python_version()
     semver_version = str(version)
-    assert python_version == "1.2.3.alpha_1.postbuild_123"
+    assert python_version == "1.2.3.alpha_1.build_123"
     assert semver_version == "1.2.3-alpha.1+build.123"
     assert python_version != semver_version

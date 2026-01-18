@@ -179,7 +179,7 @@ class Version:
             version_str += f".{prerelease}"
         if self.__metadata:
             metadata = self.__metadata.replace('.', '_').replace('-', '_')
-            version_str += f".post{metadata}"
+            version_str += f".{metadata}"
         return version_str
 
     def __repr__(self) -> str:
